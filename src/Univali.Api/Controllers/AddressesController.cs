@@ -5,11 +5,9 @@ using Univali.Api.Models;
 
 namespace Univali.Api.Controllers;
 
-[ApiController]
 [Route("api/customers/{customerId}/addresses")]
-public class AddressesController : ControllerBase
+public class AddressesController : MainController
 {
-
     private readonly Data _data;
     private readonly IMapper _mapper;
 

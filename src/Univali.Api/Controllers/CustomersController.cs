@@ -2,16 +2,18 @@ using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Options;
 using Univali.Api.Entities;
 using Univali.Api.Models;
 
 namespace Univali.Api.Controllers;
 
-[ApiController]
+
 [Route("api/customers")]
-public class CustomersController : ControllerBase
+public class CustomersController : MainController
 {
-    
+
     private readonly Data _data;
     private readonly IMapper _mapper;
 
@@ -38,7 +40,7 @@ public class CustomersController : ControllerBase
 
         if (customerFromDatabase == null) return NotFound();
 
-       var customerToReturn = _mapper.Map<CustomerDto>(customerFromDatabase);
+        var customerToReturn = _mapper.Map<CustomerDto>(customerFromDatabase);
         return Ok(customerToReturn);
     }
 
@@ -54,7 +56,7 @@ public class CustomersController : ControllerBase
             return NotFound();
         }
 
-       var customerToReturn = _mapper.Map<CustomerDto>(customerFromDatabase);
+        var customerToReturn = _mapper.Map<CustomerDto>(customerFromDatabase);
         return Ok(customerToReturn);
     }
 
@@ -111,7 +113,7 @@ public class CustomersController : ControllerBase
 
         if (customerFromDatabase == null) return NotFound();
 
-       _mapper.Map(customerForUpdateDto, customerFromDatabase);
+        _mapper.Map(customerForUpdateDto, customerFromDatabase);
 
         return NoContent();
     }
@@ -144,7 +146,12 @@ public class CustomersController : ControllerBase
             Cpf = customerFromDatabase.Cpf
         };
 
-        patchDocument.ApplyTo(customerToPatch);
+        patchDocument.ApplyTo(customerToPatch, ModelState);
+
+        if(!TryValidateModel(customerToPatch))
+        {
+            return ValidationProblem(ModelState);
+        }
 
         _mapper.Map(customerToPatch, customerFromDatabase);
 
@@ -175,7 +182,7 @@ public class CustomersController : ControllerBase
         return Ok(customersToReturn);
     }
 
-    [HttpGet("with-addresses/{customerId}", Name="GetCustomerWithAddressesById")]
+    [HttpGet("with-addresses/{customerId}", Name = "GetCustomerWithAddressesById")]
     public ActionResult<CustomerWithAddressesDto> GetCustomerWithAddressesById(int customerId)
     {
         // Obtém o primeiro recurso que encontrar com a id correspondente ou retorna null
@@ -206,122 +213,121 @@ public class CustomersController : ControllerBase
         return Ok(customerToReturn);
     }
 
-[HttpPost("with-addresses")]
-public ActionResult<CustomerWithAddressesDto> CreateCustomerWithAddresses(
-   CustomerWithAddressesForCreationDto customerWithAddressesForCreationDto)
-{
-   /*
-       Obtém o último Id de Address
-       SelectMany retorna uma lista com todos endereços de todos usuários
-       Max obtém a Id com o valor mais alto
-   */
-   var maxAddressId = _data.Customers
-       .SelectMany(c => c.Addresses).Max(c => c.Id);
+    [HttpPost("with-addresses")]
+    public ActionResult<CustomerWithAddressesDto> CreateCustomerWithAddresses(
+       CustomerWithAddressesForCreationDto customerWithAddressesForCreationDto)
+    {
+        /*
+            Obtém o último Id de Address
+            SelectMany retorna uma lista com todos endereços de todos usuários
+            Max obtém a Id com o valor mais alto
+        */
+        var maxAddressId = _data.Customers
+            .SelectMany(c => c.Addresses).Max(c => c.Id);
 
-   /*
-       Obtém uma lista de dados mapeados de AddressWithAddressesForCreationDto para Address
-       Select projeta cada item da lista para um novo formato
-       ToList transforma os dados em lista
-   */
-   List<Address> AddressesEntity = customerWithAddressesForCreationDto.Addresses
-       .Select(address =>
-           new Address
-           {
-               Id = ++maxAddressId,
-               Street = address.Street,
-               City = address.City
-           }).ToList();
+        /*
+            Obtém uma lista de dados mapeados de AddressWithAddressesForCreationDto para Address
+            Select projeta cada item da lista para um novo formato
+            ToList transforma os dados em lista
+        */
+        List<Address> AddressesEntity = customerWithAddressesForCreationDto.Addresses
+            .Select(address =>
+                new Address
+                {
+                    Id = ++maxAddressId,
+                    Street = address.Street,
+                    City = address.City
+                }).ToList();
 
-   // Mapeia a instância customerWithAddressesForCreationDto para Customer
-   var customerEntity = new Customer
-   {
-       Id = _data.Customers.Max(c => c.Id) + 1, // Obtém id do customer
-       Name = customerWithAddressesForCreationDto.Name,
-       Cpf = customerWithAddressesForCreationDto.Cpf,
-       Addresses = AddressesEntity // Atribui o Address mapeado
-   };
-
-
-   // Adiciona no Database
-   _data.Customers.Add(customerEntity);
+        // Mapeia a instância customerWithAddressesForCreationDto para Customer
+        var customerEntity = new Customer
+        {
+            Id = _data.Customers.Max(c => c.Id) + 1, // Obtém id do customer
+            Name = customerWithAddressesForCreationDto.Name,
+            Cpf = customerWithAddressesForCreationDto.Cpf,
+            Addresses = AddressesEntity // Atribui o Address mapeado
+        };
 
 
-   // Obtém uma lista de dados mapeados de Address para AddressDto
-   List<AddressDto> addressesDto = customerEntity.Addresses
-       .Select(address =>
-           new AddressDto
-           {
-               Id = address.Id,
-               Street = address.Street,
-               City = address.City
-           }).ToList();
+        // Adiciona no Database
+        _data.Customers.Add(customerEntity);
 
 
-   // Mapeia a instância Customer para CustomerDto
-   var customerToReturn = new CustomerWithAddressesDto
-   {
-       Id = customerEntity.Id,
-       Name = customerEntity.Name,
-       Cpf = customerEntity.Cpf,
-       Addresses = addressesDto // Atribui o Address mapeado
-   };
+        // Obtém uma lista de dados mapeados de Address para AddressDto
+        List<AddressDto> addressesDto = customerEntity.Addresses
+            .Select(address =>
+                new AddressDto
+                {
+                    Id = address.Id,
+                    Street = address.Street,
+                    City = address.City
+                }).ToList();
 
 
-   // Retorna uma resposta com o cabeçalho de localização do novo recurso
-   return CreatedAtRoute
-   (
-       // Nome do método
-       "GetCustomerWithAddressesById",
-       // Objeto anônimo que possui os parâmetros do método
-       new { customerId = customerToReturn.Id },
-       // O novo registro criado
-       customerToReturn
-   );
-}
-
-[HttpPut("with-addresses/{customerId}")]
-public ActionResult UpdateCustomerWithAddresses(int customerId,
-   CustomerWithAddressesForUpdateDto customerWithAddressesForUpdateDto)
-{
-   if(customerId != customerWithAddressesForUpdateDto.Id) return BadRequest();
-
-  // Obtém o primeiro recurso que encontrar com a id correspondente ou retorna null
-  var customerFromDatabase = _data.Customers
-      .FirstOrDefault(c => c.Id == customerId);
-   // Verifica se customer foi encontrado
-  if (customerFromDatabase  == null) return NotFound();
-
-  // Atualiza a instância customer no Database
-  customerFromDatabase.Name = customerWithAddressesForUpdateDto.Name;
-  customerFromDatabase.Cpf = customerWithAddressesForUpdateDto.Cpf;
+        // Mapeia a instância Customer para CustomerDto
+        var customerToReturn = new CustomerWithAddressesDto
+        {
+            Id = customerEntity.Id,
+            Name = customerEntity.Name,
+            Cpf = customerEntity.Cpf,
+            Addresses = addressesDto // Atribui o Address mapeado
+        };
 
 
-  // Obtém o último id de Address
-  var maxAddressId = _data.Customers
-      .SelectMany(c => c.Addresses)
-      .Max(c => c.Id);
+        // Retorna uma resposta com o cabeçalho de localização do novo recurso
+        return CreatedAtRoute
+        (
+            // Nome do método
+            "GetCustomerWithAddressesById",
+            // Objeto anônimo que possui os parâmetros do método
+            new { customerId = customerToReturn.Id },
+            // O novo registro criado
+            customerToReturn
+        );
+    }
 
-  /*
-      Obtém uma lista de dados mapeados de AddressForAddressDto para Address
-      Select projeta cada item da lista para um novo formato
-      ToList transforma os dados em lista
-  */
-  customerFromDatabase.Addresses = customerWithAddressesForUpdateDto
-                                  .Addresses.Select(
-                                      address =>
-                                      new Address()
-                                      {
-                                          Id = ++maxAddressId,
-                                          City = address.City,
-                                          Street = address.Street
-                                      }
-                                  ).ToList();
+    [HttpPut("with-addresses/{customerId}")]
+    public ActionResult UpdateCustomerWithAddresses(int customerId,
+       CustomerWithAddressesForUpdateDto customerWithAddressesForUpdateDto)
+    {
+        if (customerId != customerWithAddressesForUpdateDto.Id) return BadRequest();
+
+        // Obtém o primeiro recurso que encontrar com a id correspondente ou retorna null
+        var customerFromDatabase = _data.Customers
+            .FirstOrDefault(c => c.Id == customerId);
+        // Verifica se customer foi encontrado
+        if (customerFromDatabase == null) return NotFound();
+
+        // Atualiza a instância customer no Database
+        customerFromDatabase.Name = customerWithAddressesForUpdateDto.Name;
+        customerFromDatabase.Cpf = customerWithAddressesForUpdateDto.Cpf;
 
 
-  // Retorna um StatusCode 204 No Content
-  return NoContent();
-}
+        // Obtém o último id de Address
+        var maxAddressId = _data.Customers
+            .SelectMany(c => c.Addresses)
+            .Max(c => c.Id);
 
+        /*
+            Obtém uma lista de dados mapeados de AddressForAddressDto para Address
+            Select projeta cada item da lista para um novo formato
+            ToList transforma os dados em lista
+        */
+        customerFromDatabase.Addresses = customerWithAddressesForUpdateDto
+                                        .Addresses.Select(
+                                            address =>
+                                            new Address()
+                                            {
+                                                Id = ++maxAddressId,
+                                                City = address.City,
+                                                Street = address.Street
+                                            }
+                                        ).ToList();
 
+        // Retorna um StatusCode 204 No Content
+        return NoContent();
+    }
+
+ 
 
 }
