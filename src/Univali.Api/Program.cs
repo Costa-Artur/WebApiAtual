@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Univali.Api;
 using Univali.Api.Configuration;
 using Univali.Api.DbContexts;
+using Univali.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -81,5 +82,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+await app.ResetDatabaseAsync();
 
 app.Run();

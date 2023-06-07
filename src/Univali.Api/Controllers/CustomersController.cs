@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
+using Univali.Api.DbContexts;
 using Univali.Api.Entities;
 using Univali.Api.Models;
 
@@ -16,18 +17,20 @@ public class CustomersController : MainController
 
     private readonly Data _data;
     private readonly IMapper _mapper;
+    private readonly CustomerContext _context;
 
-    public CustomersController(Data data, IMapper mapper)
+    public CustomersController(Data data, IMapper mapper, CustomerContext context)
     {
         _data = data ?? throw new ArgumentNullException(nameof(data));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
 
     [HttpGet]
     public ActionResult<IEnumerable<CustomerDto>> GetCustomers()
     {
-        var customersFromDatabase = _data.Customers;
+        var customersFromDatabase = _context.Customers.OrderBy(c => c.Id).ToList();
         var customersToReturn = _mapper.Map<IEnumerable<CustomerDto>>(customersFromDatabase);
         return Ok(customersToReturn);
     }
@@ -35,7 +38,7 @@ public class CustomersController : MainController
     [HttpGet("{id}", Name = "GetCustomerById")]
     public ActionResult<CustomerDto> GetCustomerById(int id)
     {
-        var customerFromDatabase = _data
+        var customerFromDatabase = _context
             .Customers.FirstOrDefault(c => c.Id == id);
 
         if (customerFromDatabase == null) return NotFound();
@@ -48,7 +51,7 @@ public class CustomersController : MainController
     [HttpGet("cpf/{cpf}")]
     public ActionResult<CustomerDto> GetCustomerByCpf(string cpf)
     {
-        var customerFromDatabase = _data.Customers
+        var customerFromDatabase = _context.Customers
             .FirstOrDefault(c => c.Cpf == cpf);
 
         if (customerFromDatabase == null)
@@ -82,16 +85,12 @@ public class CustomersController : MainController
             return UnprocessableEntity(validationProblemDetails);
         }*/
 
-        var customerEntity = new Customer()
-        {
-            Id = _data.Customers.Max(c => c.Id) + 1,
-            Name = customerForCreationDto.Name,
-            Cpf = customerForCreationDto.Cpf
-        };
+        var customerEntity = _mapper.Map<Customer>(customerForCreationDto);
 
-        _data.Customers.Add(customerEntity);
+        _context.Customers.Add(customerEntity);
+        _context.SaveChanges();
 
-        var customerToReturn = _mapper.Map<CustomerDto>(customerForCreationDto);
+        var customerToReturn = _mapper.Map<CustomerDto>(customerEntity);
         customerToReturn.Id = customerEntity.Id;
 
         return CreatedAtRoute
