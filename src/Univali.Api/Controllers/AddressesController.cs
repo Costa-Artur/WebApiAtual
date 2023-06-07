@@ -33,9 +33,7 @@ public class AddressesController : MainController
                 _mapper.Map<AddressDto>(address)
             );
         }
-
         return Ok(addressesToReturn);
-
     }
 
 [HttpGet("{addressId}", Name="GetAddress")]
@@ -101,12 +99,7 @@ public ActionResult<AddressDto> CreateAddress(
 
 
    // Mapeia a Instância Address do Singleton para uma instância AddressDto
-   var addressToReturn = new AddressDto()
-   {
-       Id = addressEntity.Id,
-       City = addressEntity.City,
-       Street = addressEntity.Street
-   };
+   var addressToReturn = _mapper.Map<AddressDto>(addressEntity);
 
 
    // Retorna um status code 201 com o local onde o recurso possa ser obtido
@@ -141,8 +134,7 @@ public ActionResult UpdateAddress(int customerId, int addressId,
    if(addressFromDatabase == null) return NotFound();
 
    // Atualiza Address no Database
-   addressFromDatabase.City = addressForUpdateDto.City;
-   addressFromDatabase.Street = addressForUpdateDto.Street;
+   _mapper.Map(addressForUpdateDto, addressFromDatabase);
 
    // Retorna Status Code 204 No Content
    return NoContent();
