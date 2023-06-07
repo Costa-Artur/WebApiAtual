@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Univali.Api.Entities;
 using Univali.Api.Models;
@@ -10,10 +11,12 @@ public class AddressesController : ControllerBase
 {
 
     private readonly Data _data;
+    private readonly IMapper _mapper;
 
-    public AddressesController(Data data)
+    public AddressesController(Data data, IMapper mapper)
     {
         _data = data ?? throw new ArgumentNullException(nameof(data));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     [HttpGet]
@@ -28,12 +31,9 @@ public class AddressesController : ControllerBase
 
         foreach (var address in customerFromDatabase.Addresses)
         {
-            addressesToReturn.Add(new AddressDto
-            {
-                Id = address.Id,
-                Street = address.Street,
-                City = address.City
-            });
+            addressesToReturn.Add(
+                _mapper.Map<AddressDto>(address)
+            );
         }
 
         return Ok(addressesToReturn);
@@ -43,29 +43,24 @@ public class AddressesController : ControllerBase
 [HttpGet("{addressId}", Name="GetAddress")]
 public ActionResult<AddressDto> GetAddress(int customerId, int addressId)
 {
-  // Obtém o primeiro Customer que encontrar com a id correspondente ou retorna null
-  var customerFromDatabase = _data.Customers
-      .FirstOrDefault(customer => customer.Id == customerId);
+    // Obtém o primeiro Customer que encontrar com a id correspondente ou retorna null
+    var customerFromDatabase = _data.Customers
+        .FirstOrDefault(customer => customer.Id == customerId);
 
-  // Verifica se Customer foi encontrado
-  if (customerFromDatabase == null) return NotFound();
+    // Verifica se Customer foi encontrado
+    if (customerFromDatabase == null) return NotFound();
 
-  // Obtém o primeiro Address que encontrar com a id correspondente ou retorna null
-  var addressFromDatabase = customerFromDatabase.Addresses
-      .FirstOrDefault(address => address.Id == addressId);
+    // Obtém o primeiro Address que encontrar com a id correspondente ou retorna null
+    var addressFromDatabase = customerFromDatabase.Addresses
+        .FirstOrDefault(address => address.Id == addressId);
 
-  // Verifica se Address foi encontrado
-  if (addressFromDatabase == null) return NotFound();
+    // Verifica se Address foi encontrado
+    if (addressFromDatabase == null) return NotFound();
 
-  var addressToReturn = new AddressDto
-  {
-      Id = addressFromDatabase.Id,
-      Street = addressFromDatabase.Street,
-      City = addressFromDatabase.City
-  };
+    var addressToReturn = _mapper.Map<AddressDto>(addressFromDatabase);
 
-  // Retorna StatusCode 200 com os Addresses no corpo do response
-  return Ok(addressToReturn);
+    // Retorna StatusCode 200 com os Addresses no corpo do response
+    return Ok(addressToReturn);
 }
 
 [HttpPost]
@@ -98,12 +93,9 @@ public ActionResult<AddressDto> CreateAddress(
    // }
 
    // Mapeia a instância AddressForCreationDto para Address
-   var addressEntity = new Address()
-   {
-       Id = ++maxAddressId,
-       Street = addressForCreationDto.Street,
-       City = addressForCreationDto.City
-   };
+   var addressEntity = _mapper.Map<Address>(addressForCreationDto);
+
+   addressEntity.Id = maxAddressId+1;
 
 
    // Inseri no Singleton

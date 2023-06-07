@@ -1,4 +1,3 @@
-
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -64,8 +63,7 @@ public class CustomersController : ControllerBase
         CustomerForCreationDto customerForCreationDto)
     {
 
-
-        if (!ModelState.IsValid)
+        /*if (!ModelState.IsValid)
         {
             Response.ContentType = "application/problem+json";
             // Cria a fábrica de um objeto de detalhes de problema de validação
@@ -80,7 +78,7 @@ public class CustomersController : ControllerBase
             validationProblemDetails.Status = StatusCodes.Status422UnprocessableEntity;
 
             return UnprocessableEntity(validationProblemDetails);
-        }
+        }*/
 
         var customerEntity = new Customer()
         {

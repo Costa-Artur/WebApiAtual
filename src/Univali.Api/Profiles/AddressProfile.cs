@@ -8,5 +8,6 @@ public class AddressProfile : Profile
     {
         CreateMap<Models.AddressDto, Entities.Address>();
         CreateMap<Entities.Address, Models.AddressDto>();
+        CreateMap<Models.AddressForCreationDto, Entities.Address>();
     }
 }
