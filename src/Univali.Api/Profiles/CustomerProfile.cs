@@ -13,5 +13,10 @@ public class CustomerProfile : Profile
             Se a propriedade não existir é ignorada
         */
         CreateMap<Entities.Customer, Models.CustomerDto>();
+        CreateMap<Models.CustomerForCreationDto, Models.CustomerDto>();
+        CreateMap<Models.CustomerForUpdateDto, Entities.Customer>();
+        CreateMap<Models.CustomerForPatchDto, Entities.Customer>();
+        CreateMap<Entities.Customer, Models.CustomerWithAddressesDto>();
+
     }
 }

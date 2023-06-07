@@ -39,12 +39,7 @@ public class CustomersController : ControllerBase
 
         if (customerFromDatabase == null) return NotFound();
 
-        CustomerDto customerToReturn = new CustomerDto
-        {
-            Id = customerFromDatabase.Id,
-            Name = customerFromDatabase.Name,
-            Cpf = customerFromDatabase.Cpf
-        };
+       var customerToReturn = _mapper.Map<CustomerDto>(customerFromDatabase);
         return Ok(customerToReturn);
     }
 
@@ -60,12 +55,7 @@ public class CustomersController : ControllerBase
             return NotFound();
         }
 
-        CustomerDto customerToReturn = new CustomerDto
-        {
-            Id = customerFromDatabase.Id,
-            Name = customerFromDatabase.Name,
-            Cpf = customerFromDatabase.Cpf
-        };
+       var customerToReturn = _mapper.Map<CustomerDto>(customerFromDatabase);
         return Ok(customerToReturn);
     }
 
@@ -101,12 +91,8 @@ public class CustomersController : ControllerBase
 
         _data.Customers.Add(customerEntity);
 
-        var customerToReturn = new CustomerDto
-        {
-            Id = customerEntity.Id,
-            Name = customerForCreationDto.Name,
-            Cpf = customerForCreationDto.Cpf
-        };
+        var customerToReturn = _mapper.Map<CustomerDto>(customerForCreationDto);
+        customerToReturn.Id = customerEntity.Id;
 
         return CreatedAtRoute
         (
@@ -127,8 +113,7 @@ public class CustomersController : ControllerBase
 
         if (customerFromDatabase == null) return NotFound();
 
-        customerFromDatabase.Name = customerForUpdateDto.Name;
-        customerFromDatabase.Cpf = customerForUpdateDto.Cpf;
+       _mapper.Map(customerForUpdateDto, customerFromDatabase);
 
         return NoContent();
     }
@@ -163,8 +148,7 @@ public class CustomersController : ControllerBase
 
         patchDocument.ApplyTo(customerToPatch);
 
-        customerFromDatabase.Name = customerToPatch.Name;
-        customerFromDatabase.Cpf = customerToPatch.Cpf;
+        _mapper.Map(customerToPatch, customerFromDatabase);
 
         return NoContent();
 
@@ -219,14 +203,7 @@ public class CustomersController : ControllerBase
         ).ToList();
 
         // Mapeia Customer para CustomerDto
-        var customerToReturn = new CustomerWithAddressesDto
-        {
-            Id = customerFromDatabase.Id,
-            Name = customerFromDatabase.Name,
-            Cpf = customerFromDatabase.Cpf,
-            Addresses = addressesDto
-        };
-
+        var customerToReturn = _mapper.Map<CustomerWithAddressesDto>(customerFromDatabase);
         // Retorna StatusCode 200 com o Customer no corpo do response
         return Ok(customerToReturn);
     }
