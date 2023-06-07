@@ -6,5 +6,5 @@ public class CustomerForUpdateDto : CustomerForManipulationDto
 {
     [Required(ErrorMessage = "You should fill out an Id")]
     public int Id {get; set;}
-    public override string Cpf {get; set;} = string.Empty;
+    public override string Cpf {get => base.Cpf; set=> base.Cpf = value;}
 }
