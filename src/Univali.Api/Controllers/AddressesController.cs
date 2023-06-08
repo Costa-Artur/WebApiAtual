@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Univali.Api.DbContexts;
 using Univali.Api.Entities;
 using Univali.Api.Models;
 
@@ -11,10 +12,13 @@ public class AddressesController : MainController
     private readonly Data _data;
     private readonly IMapper _mapper;
 
-    public AddressesController(Data data, IMapper mapper)
+    private readonly CustomerContext _context;
+
+    public AddressesController(Data data, IMapper mapper, CustomerContext context)
     {
         _data = data ?? throw new ArgumentNullException(nameof(data));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
     [HttpGet]
