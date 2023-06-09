@@ -146,7 +146,7 @@ public class CustomersController : MainController
 
         patchDocument.ApplyTo(customerToPatch, ModelState);
 
-        if(!TryValidateModel(customerToPatch))
+        if (!TryValidateModel(customerToPatch))
         {
             return ValidationProblem(ModelState);
         }
@@ -177,7 +177,9 @@ public class CustomersController : MainController
     {
         // Obtém o primeiro recurso que encontrar com a id correspondente ou retorna null
         var customerFromDatabase = _context
-            .Customers.FirstOrDefault(c => c.Id == customerId);
+            .Customers
+            .Include(c => c.Addresses)
+            .FirstOrDefault(c => c.Id == customerId);
 
         // Verifica se customer foi encontrado
         if (customerFromDatabase == null) return NotFound();
@@ -285,6 +287,6 @@ public class CustomersController : MainController
         return NoContent();
     }
 
- 
+
 
 }

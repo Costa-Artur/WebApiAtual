@@ -29,6 +29,7 @@ public class AddressesController : MainController
     public ActionResult<IEnumerable<AddressDto>> GetAddresses(int customerId)
     {
         var customerFromDatabase = _context.Customers
+            .Include(c => c.Addresses)
             .FirstOrDefault(customer => customer.Id == customerId);
 
         if (customerFromDatabase == null) return NotFound();
@@ -44,130 +45,131 @@ public class AddressesController : MainController
         return Ok(addressesToReturn);
     }
 
-[HttpGet("{addressId}", Name="GetAddress")]
-public ActionResult<AddressDto> GetAddress(int customerId, int addressId)
-{
-    // Obtém o primeiro Customer que encontrar com a id correspondente ou retorna null
-    var customerFromDatabase = _context.Customers
-        .FirstOrDefault(customer => customer.Id == customerId);
+    [HttpGet("{addressId}", Name = "GetAddress")]
+    public ActionResult<AddressDto> GetAddress(int customerId, int addressId)
+    {
+        // Obtém o primeiro Customer que encontrar com a id correspondente ou retorna null
+        var customerFromDatabase = _context.Customers
+            .Include(c => c.Addresses)
+            .FirstOrDefault(customer => customer.Id == customerId);
 
-    // Verifica se Customer foi encontrado
-    if (customerFromDatabase == null) return NotFound();
+        // Verifica se Customer foi encontrado
+        if (customerFromDatabase == null) return NotFound();
 
-    // Obtém o primeiro Address que encontrar com a id correspondente ou retorna null
-    var addressFromDatabase = customerFromDatabase.Addresses
-        .FirstOrDefault(address => address.Id == addressId);
+        // Obtém o primeiro Address que encontrar com a id correspondente ou retorna null
+        var addressFromDatabase = customerFromDatabase.Addresses
+            .FirstOrDefault(address => address.Id == addressId);
 
-    // Verifica se Address foi encontrado
-    if (addressFromDatabase == null) return NotFound();
+        // Verifica se Address foi encontrado
+        if (addressFromDatabase == null) return NotFound();
 
-    var addressToReturn = _mapper.Map<AddressDto>(addressFromDatabase);
+        var addressToReturn = _mapper.Map<AddressDto>(addressFromDatabase);
 
-    // Retorna StatusCode 200 com os Addresses no corpo do response
-    return Ok(addressToReturn);
-}
+        // Retorna StatusCode 200 com os Addresses no corpo do response
+        return Ok(addressToReturn);
+    }
 
-[HttpPost]
-public ActionResult<AddressDto> CreateAddress(
-   int customerId,
-   AddressForCreationDto addressForCreationDto)
-{
-   // Obtém o Customer ou retorna null
-   var customerFromDatabase = _context.Customers
-       .FirstOrDefault(c => c.Id == customerId);
+    [HttpPost]
+    public ActionResult<AddressDto> CreateAddress(
+       int customerId,
+       AddressForCreationDto addressForCreationDto)
+    {
+        // Obtém o Customer ou retorna null
+        var customerFromDatabase = _context.Customers
+            .FirstOrDefault(c => c.Id == customerId);
 
-   // Verifica se Customer existe
-   if (customerFromDatabase == null) return NotFound();
+        // Verifica se Customer existe
+        if (customerFromDatabase == null) return NotFound();
 
-   /*
-       Obtém o último Id de Address
-       SelectMany retorna uma lista com todos endereços de todos usuários
-       Max obtém a Id com o valor mais alto
-   */
+        /*
+            Obtém o último Id de Address
+            SelectMany retorna uma lista com todos endereços de todos usuários
+            Max obtém a Id com o valor mais alto
+        */
 
-   // var addresses = _data.Customers
-   //     .SelectMany(c => c.Addresses);
-  
-   // foreach(var address in addresses)
-   // {
-   //     Console.WriteLine($"Street: {address.Street}");
-   //     Console.WriteLine($"City: {address.City}");
-   // }
+        // var addresses = _data.Customers
+        //     .SelectMany(c => c.Addresses);
 
-   // Mapeia a instância AddressForCreationDto para Address
-   var addressEntity = _mapper.Map<Address>(addressForCreationDto);
+        // foreach(var address in addresses)
+        // {
+        //     Console.WriteLine($"Street: {address.Street}");
+        //     Console.WriteLine($"City: {address.City}");
+        // }
 
-
-   // Inseri no Singleton
-   customerFromDatabase.Addresses.Add(addressEntity);
-
-   _context.SaveChanges();
-
-   // Mapeia a Instância Address do Singleton para uma instância AddressDto
-   var addressToReturn = _mapper.Map<AddressDto>(addressEntity);
+        // Mapeia a instância AddressForCreationDto para Address
+        var addressEntity = _mapper.Map<Address>(addressForCreationDto);
 
 
-   // Retorna um status code 201 com o local onde o recurso possa ser obtido
-   return CreatedAtRoute("GetAddress",
-       new
-       {
-           customerId = customerFromDatabase.Id,
-           addressId = addressToReturn.Id
-       },
-       addressToReturn
-   );
-}
+        // Inseri no Singleton
+        customerFromDatabase.Addresses.Add(addressEntity);
 
-[HttpPut("{addressId}")]
-public ActionResult UpdateAddress(int customerId, int addressId,
-   AddressForUpdateDto addressForUpdateDto)
-{
-   if(addressForUpdateDto.Id != addressId) return BadRequest();
+        _context.SaveChanges();
 
-   // Obtém o primeiro Customer que encontrar com a id correspondente ou retorna null
-   var customerFromDatabase = _context.Customers
-        .Include(c => c.Addresses)
-       .FirstOrDefault(c => c.Id == customerId);
+        // Mapeia a Instância Address do Singleton para uma instância AddressDto
+        var addressToReturn = _mapper.Map<AddressDto>(addressEntity);
 
-   // Verifica se Customer foi encontrado
-   if(customerFromDatabase == null) return NotFound();
 
-   // Obtém o primeiro Address que encontrar com a id correspondente ou retorna null
-   var addressFromDatabase = customerFromDatabase.Addresses
-       .FirstOrDefault(a => a.Id == addressId);
+        // Retorna um status code 201 com o local onde o recurso possa ser obtido
+        return CreatedAtRoute("GetAddress",
+            new
+            {
+                customerId = customerFromDatabase.Id,
+                addressId = addressToReturn.Id
+            },
+            addressToReturn
+        );
+    }
 
-   // Verifica se Address foi encontrado
-   if(addressFromDatabase == null) return NotFound();
+    [HttpPut("{addressId}")]
+    public ActionResult UpdateAddress(int customerId, int addressId,
+       AddressForUpdateDto addressForUpdateDto)
+    {
+        if (addressForUpdateDto.Id != addressId) return BadRequest();
 
-   // Atualiza Address no Database
-   _mapper.Map(addressForUpdateDto, addressFromDatabase);
+        // Obtém o primeiro Customer que encontrar com a id correspondente ou retorna null
+        var customerFromDatabase = _context.Customers
+             .Include(c => c.Addresses)
+            .FirstOrDefault(c => c.Id == customerId);
 
-   _context.SaveChanges();
+        // Verifica se Customer foi encontrado
+        if (customerFromDatabase == null) return NotFound();
 
-   // Retorna Status Code 204 No Content
-   return NoContent();
-}
+        // Obtém o primeiro Address que encontrar com a id correspondente ou retorna null
+        var addressFromDatabase = customerFromDatabase.Addresses
+            .FirstOrDefault(a => a.Id == addressId);
 
-[HttpDelete("{addressId}")]
-public ActionResult DeleteAddress(int customerId, int addressId)
-{
-   var customerFromDatabase = _context.Customers
-        .Include(c => c.Addresses)
-       .FirstOrDefault(customer => customer.Id == customerId);
+        // Verifica se Address foi encontrado
+        if (addressFromDatabase == null) return NotFound();
 
-   if (customerFromDatabase == null) return NotFound();
+        // Atualiza Address no Database
+        _mapper.Map(addressForUpdateDto, addressFromDatabase);
 
-   var addressFromDatabase = customerFromDatabase.Addresses
-       .FirstOrDefault(address => address.Id == addressId);
+        _context.SaveChanges();
 
-   if (addressFromDatabase == null) return NotFound();
+        // Retorna Status Code 204 No Content
+        return NoContent();
+    }
 
-   customerFromDatabase.Addresses.Remove(addressFromDatabase);
+    [HttpDelete("{addressId}")]
+    public ActionResult DeleteAddress(int customerId, int addressId)
+    {
+        var customerFromDatabase = _context.Customers
+             .Include(c => c.Addresses)
+            .FirstOrDefault(customer => customer.Id == customerId);
 
-   _context.SaveChanges();
+        if (customerFromDatabase == null) return NotFound();
 
-   return NoContent();
-}
+        var addressFromDatabase = customerFromDatabase.Addresses
+            .FirstOrDefault(address => address.Id == addressId);
+
+        if (addressFromDatabase == null) return NotFound();
+
+        customerFromDatabase.Addresses.Remove(addressFromDatabase);
+
+        _context.SaveChanges();
+
+        return NoContent();
+    }
 
 
 }
