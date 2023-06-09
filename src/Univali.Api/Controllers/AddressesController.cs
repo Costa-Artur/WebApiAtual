@@ -1,5 +1,10 @@
 using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Univali.Api.DbContexts;
 using Univali.Api.Entities;
 using Univali.Api.Models;
@@ -121,6 +126,7 @@ public ActionResult UpdateAddress(int customerId, int addressId,
 
    // Obtém o primeiro Customer que encontrar com a id correspondente ou retorna null
    var customerFromDatabase = _context.Customers
+        .Include(c => c.Addresses)
        .FirstOrDefault(c => c.Id == customerId);
 
    // Verifica se Customer foi encontrado
@@ -146,6 +152,7 @@ public ActionResult UpdateAddress(int customerId, int addressId,
 public ActionResult DeleteAddress(int customerId, int addressId)
 {
    var customerFromDatabase = _context.Customers
+        .Include(c => c.Addresses)
        .FirstOrDefault(customer => customer.Id == customerId);
 
    if (customerFromDatabase == null) return NotFound();
