@@ -9,17 +9,9 @@ build_property.EnforceExtendedAnalyzerRules =
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = Univali.Api
 build_property.RootNamespace = Univali.Api
-<<<<<<< HEAD
-build_property.ProjectDir = c:\Users\7828497\Desktop\WebApiAtual\src\Univali.Api\
+build_property.ProjectDir = C:\Users\7828497\Desktop\WebApiAtual\src\univali.api\
 build_property.RazorLangVersion = 7.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = c:\Users\7828497\Desktop\WebApiAtual\src\Univali.Api
-=======
-build_property.ProjectDir = C:\Users\artur\Documents\PROGRAMAÇÃO\C#\WebApiAtual\src\univali.api\
-build_property.RazorLangVersion = 7.0
-build_property.SupportLocalizedComponentNames = 
-build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\artur\Documents\PROGRAMAÇÃO\C#\WebApiAtual\src\univali.api
->>>>>>> 5ac104944a508a817060e0fca915dc7c2863effe
+build_property.MSBuildProjectDirectory = C:\Users\7828497\Desktop\WebApiAtual\src\univali.api
 build_property._RazorSourceGeneratorDebug = 

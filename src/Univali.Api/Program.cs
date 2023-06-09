@@ -16,7 +16,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddSingleton<Data>();
 builder.Services.AddDbContext<CustomerContext>(options => 
 {
-    options.UseNpgsql("Host=localhost;Database=Univali;Username=postgres;Password=Quintalmagico12#");
+    options.UseNpgsql("Host=localhost;Database=Univali;Username=postgres;Password=123456");
 }
 );
 
