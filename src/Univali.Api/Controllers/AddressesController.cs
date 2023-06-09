@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Univali.Api.DbContexts;
 using Univali.Api.Entities;
 using Univali.Api.Models;
 
@@ -10,17 +11,19 @@ public class AddressesController : MainController
 {
     private readonly Data _data;
     private readonly IMapper _mapper;
+    private readonly CustomerContext _context;
 
-    public AddressesController(Data data, IMapper mapper)
+    public AddressesController(Data data, IMapper mapper, CustomerContext context)
     {
         _data = data ?? throw new ArgumentNullException(nameof(data));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
     [HttpGet]
     public ActionResult<IEnumerable<AddressDto>> GetAddresses(int customerId)
     {
-        var customerFromDatabase = _data.Customers
+        var customerFromDatabase = _context.Customers
             .FirstOrDefault(customer => customer.Id == customerId);
 
         if (customerFromDatabase == null) return NotFound();
@@ -40,7 +43,7 @@ public class AddressesController : MainController
 public ActionResult<AddressDto> GetAddress(int customerId, int addressId)
 {
     // Obtém o primeiro Customer que encontrar com a id correspondente ou retorna null
-    var customerFromDatabase = _data.Customers
+    var customerFromDatabase = _context.Customers
         .FirstOrDefault(customer => customer.Id == customerId);
 
     // Verifica se Customer foi encontrado
@@ -65,7 +68,7 @@ public ActionResult<AddressDto> CreateAddress(
    AddressForCreationDto addressForCreationDto)
 {
    // Obtém o Customer ou retorna null
-   var customerFromDatabase = _data.Customers
+   var customerFromDatabase = _context.Customers
        .FirstOrDefault(c => c.Id == customerId);
 
    // Verifica se Customer existe
@@ -76,8 +79,6 @@ public ActionResult<AddressDto> CreateAddress(
        SelectMany retorna uma lista com todos endereços de todos usuários
        Max obtém a Id com o valor mais alto
    */
-   var maxAddressId = _data.Customers
-       .SelectMany(c => c.Addresses).Max(a => a.Id);
 
    // var addresses = _data.Customers
    //     .SelectMany(c => c.Addresses);
@@ -91,12 +92,11 @@ public ActionResult<AddressDto> CreateAddress(
    // Mapeia a instância AddressForCreationDto para Address
    var addressEntity = _mapper.Map<Address>(addressForCreationDto);
 
-   addressEntity.Id = maxAddressId+1;
-
 
    // Inseri no Singleton
    customerFromDatabase.Addresses.Add(addressEntity);
 
+   _context.SaveChanges();
 
    // Mapeia a Instância Address do Singleton para uma instância AddressDto
    var addressToReturn = _mapper.Map<AddressDto>(addressEntity);
@@ -120,7 +120,7 @@ public ActionResult UpdateAddress(int customerId, int addressId,
    if(addressForUpdateDto.Id != addressId) return BadRequest();
 
    // Obtém o primeiro Customer que encontrar com a id correspondente ou retorna null
-   var customerFromDatabase = _data.Customers
+   var customerFromDatabase = _context.Customers
        .FirstOrDefault(c => c.Id == customerId);
 
    // Verifica se Customer foi encontrado
@@ -136,6 +136,8 @@ public ActionResult UpdateAddress(int customerId, int addressId,
    // Atualiza Address no Database
    _mapper.Map(addressForUpdateDto, addressFromDatabase);
 
+   _context.SaveChanges();
+
    // Retorna Status Code 204 No Content
    return NoContent();
 }
@@ -143,7 +145,7 @@ public ActionResult UpdateAddress(int customerId, int addressId,
 [HttpDelete("{addressId}")]
 public ActionResult DeleteAddress(int customerId, int addressId)
 {
-   var customerFromDatabase = _data.Customers
+   var customerFromDatabase = _context.Customers
        .FirstOrDefault(customer => customer.Id == customerId);
 
    if (customerFromDatabase == null) return NotFound();
@@ -154,6 +156,8 @@ public ActionResult DeleteAddress(int customerId, int addressId)
    if (addressFromDatabase == null) return NotFound();
 
    customerFromDatabase.Addresses.Remove(addressFromDatabase);
+
+   _context.SaveChanges();
 
    return NoContent();
 }

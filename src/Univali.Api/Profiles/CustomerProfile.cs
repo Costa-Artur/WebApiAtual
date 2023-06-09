@@ -19,5 +19,7 @@ public class CustomerProfile : Profile
         CreateMap<Entities.Customer, Models.CustomerForPatchDto>();
         CreateMap<Entities.Customer, Models.CustomerWithAddressesDto>();    
         CreateMap<Models.CustomerForCreationDto, Entities.Customer>();
+        CreateMap<Models.CustomerWithAddressesForCreationDto, Entities.Customer>();
+        CreateMap<Models.CustomerWithAddressesForUpdateDto, Entities.Customer>();
     }
 }

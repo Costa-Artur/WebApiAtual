@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Univali.Api.DbContexts;
 using Univali.Api.Entities;
@@ -107,12 +108,13 @@ public class CustomersController : MainController
     {
         if (id != customerForUpdateDto.Id) return BadRequest();
 
-        var customerFromDatabase = _data.Customers
+        var customerFromDatabase = _context.Customers
             .FirstOrDefault(customer => customer.Id == id);
 
         if (customerFromDatabase == null) return NotFound();
 
         _mapper.Map(customerForUpdateDto, customerFromDatabase);
+        _context.SaveChanges();
 
         return NoContent();
     }
@@ -120,12 +122,13 @@ public class CustomersController : MainController
     [HttpDelete("{id}")]
     public ActionResult DeleteCustomer(int id)
     {
-        var customerFromDatabase = _data.Customers
+        var customerFromDatabase = _context.Customers
             .FirstOrDefault(customer => customer.Id == id);
 
         if (customerFromDatabase == null) return NotFound();
 
-        _data.Customers.Remove(customerFromDatabase);
+        _context.Customers.Remove(customerFromDatabase);
+        _context.SaveChanges();
 
         return NoContent();
     }
@@ -134,16 +137,12 @@ public class CustomersController : MainController
         [FromBody] JsonPatchDocument<CustomerForPatchDto> patchDocument,
         [FromRoute] int id)
     {
-        var customerFromDatabase = _data.Customers
+        var customerFromDatabase = _context.Customers
             .FirstOrDefault(customer => customer.Id == id);
 
         if (customerFromDatabase == null) return NotFound();
 
-        var customerToPatch = new CustomerForPatchDto
-        {
-            Name = customerFromDatabase.Name,
-            Cpf = customerFromDatabase.Cpf
-        };
+        var customerToPatch = _mapper.Map<CustomerForPatchDto>(customerFromDatabase);
 
         patchDocument.ApplyTo(customerToPatch, ModelState);
 
@@ -154,6 +153,8 @@ public class CustomersController : MainController
 
         _mapper.Map(customerToPatch, customerFromDatabase);
 
+        _context.SaveChanges();
+
         return NoContent();
 
     }
@@ -161,22 +162,12 @@ public class CustomersController : MainController
     [HttpGet("with-addresses")]
     public ActionResult<IEnumerable<CustomerWithAddressesDto>> GetCustomersWithAddresses()
     {
-        var customersFromDatabase = _data.Customers;
+        var customersFromDatabase = _context.Customers
+            .OrderBy(c => c.Id)
+            .Include(c => c.Addresses)
+            .ToList();
 
-        var customersToReturn = customersFromDatabase
-            .Select(customer => new CustomerWithAddressesDto
-            {
-                Id = customer.Id,
-                Name = customer.Name,
-                Cpf = customer.Cpf,
-                Addresses = customer.Addresses
-                    .Select(address => new AddressDto
-                    {
-                        Id = address.Id,
-                        City = address.City,
-                        Street = address.Street
-                    }).ToList()
-            });
+        var customersToReturn = _mapper.Map<IEnumerable<CustomerWithAddressesDto>>(customersFromDatabase);
 
         return Ok(customersToReturn);
     }
@@ -185,7 +176,7 @@ public class CustomersController : MainController
     public ActionResult<CustomerWithAddressesDto> GetCustomerWithAddressesById(int customerId)
     {
         // Obtém o primeiro recurso que encontrar com a id correspondente ou retorna null
-        var customerFromDatabase = _data
+        var customerFromDatabase = _context
             .Customers.FirstOrDefault(c => c.Id == customerId);
 
         // Verifica se customer foi encontrado
@@ -198,12 +189,7 @@ public class CustomersController : MainController
         */
         var addressesDto = customerFromDatabase
             .Addresses.Select(address =>
-            new AddressDto
-            {
-                Id = address.Id,
-                City = address.City,
-                Street = address.Street
-            }
+            _mapper.Map<AddressDto>(address)
         ).ToList();
 
         // Mapeia Customer para CustomerDto
@@ -221,7 +207,7 @@ public class CustomersController : MainController
             SelectMany retorna uma lista com todos endereços de todos usuários
             Max obtém a Id com o valor mais alto
         */
-        var maxAddressId = _data.Customers
+        var maxAddressId = _context.Customers
             .SelectMany(c => c.Addresses).Max(c => c.Id);
 
         /*
@@ -231,47 +217,27 @@ public class CustomersController : MainController
         */
         List<Address> AddressesEntity = customerWithAddressesForCreationDto.Addresses
             .Select(address =>
-                new Address
-                {
-                    Id = ++maxAddressId,
-                    Street = address.Street,
-                    City = address.City
-                }).ToList();
+                _mapper.Map<Address>(address)
+                ).ToList();
 
         // Mapeia a instância customerWithAddressesForCreationDto para Customer
-        var customerEntity = new Customer
-        {
-            Id = _data.Customers.Max(c => c.Id) + 1, // Obtém id do customer
-            Name = customerWithAddressesForCreationDto.Name,
-            Cpf = customerWithAddressesForCreationDto.Cpf,
-            Addresses = AddressesEntity // Atribui o Address mapeado
-        };
-
+        var customerEntity = _mapper.Map<Customer>(customerWithAddressesForCreationDto);
+        customerEntity.Addresses = AddressesEntity;
 
         // Adiciona no Database
-        _data.Customers.Add(customerEntity);
-
+        _context.Customers.Add(customerEntity);
+        _context.SaveChanges();
 
         // Obtém uma lista de dados mapeados de Address para AddressDto
         List<AddressDto> addressesDto = customerEntity.Addresses
             .Select(address =>
-                new AddressDto
-                {
-                    Id = address.Id,
-                    Street = address.Street,
-                    City = address.City
-                }).ToList();
+                _mapper.Map<AddressDto>(address)
+                ).ToList();
 
 
         // Mapeia a instância Customer para CustomerDto
-        var customerToReturn = new CustomerWithAddressesDto
-        {
-            Id = customerEntity.Id,
-            Name = customerEntity.Name,
-            Cpf = customerEntity.Cpf,
-            Addresses = addressesDto // Atribui o Address mapeado
-        };
-
+        var customerToReturn = _mapper.Map<CustomerWithAddressesDto>(customerEntity);
+        customerToReturn.Addresses = addressesDto;
 
         // Retorna uma resposta com o cabeçalho de localização do novo recurso
         return CreatedAtRoute
@@ -292,21 +258,16 @@ public class CustomersController : MainController
         if (customerId != customerWithAddressesForUpdateDto.Id) return BadRequest();
 
         // Obtém o primeiro recurso que encontrar com a id correspondente ou retorna null
-        var customerFromDatabase = _data.Customers
+        var customerFromDatabase = _context.Customers
             .FirstOrDefault(c => c.Id == customerId);
         // Verifica se customer foi encontrado
         if (customerFromDatabase == null) return NotFound();
 
         // Atualiza a instância customer no Database
-        customerFromDatabase.Name = customerWithAddressesForUpdateDto.Name;
-        customerFromDatabase.Cpf = customerWithAddressesForUpdateDto.Cpf;
+        _mapper.Map(customerWithAddressesForUpdateDto, customerFromDatabase);
 
 
         // Obtém o último id de Address
-        var maxAddressId = _data.Customers
-            .SelectMany(c => c.Addresses)
-            .Max(c => c.Id);
-
         /*
             Obtém uma lista de dados mapeados de AddressForAddressDto para Address
             Select projeta cada item da lista para um novo formato
@@ -315,14 +276,11 @@ public class CustomersController : MainController
         customerFromDatabase.Addresses = customerWithAddressesForUpdateDto
                                         .Addresses.Select(
                                             address =>
-                                            new Address()
-                                            {
-                                                Id = ++maxAddressId,
-                                                City = address.City,
-                                                Street = address.Street
-                                            }
+                                            _mapper.Map<Address>(address)
                                         ).ToList();
 
+
+        _context.SaveChanges();
         // Retorna um StatusCode 204 No Content
         return NoContent();
     }
