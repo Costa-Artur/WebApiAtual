@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Univali.Api.DbContexts;
 using Univali.Api.Entities;
 using Univali.Api.Models;
+using Univali.Api.Repositories;
 
 namespace Univali.Api.Controllers;
 
@@ -19,28 +20,29 @@ public class CustomersController : MainController
     private readonly Data _data;
     private readonly IMapper _mapper;
     private readonly CustomerContext _context;
+    private readonly ICustomerRepository _customerRepository;
 
-    public CustomersController(Data data, IMapper mapper, CustomerContext context)
+    public CustomersController(Data data, IMapper mapper, CustomerContext context, ICustomerRepository customerRepository)
     {
         _data = data ?? throw new ArgumentNullException(nameof(data));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _context = context ?? throw new ArgumentNullException(nameof(context));
+        _customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository));
     }
 
 
     [HttpGet]
-    public ActionResult<IEnumerable<CustomerDto>> GetCustomers()
+    public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomers()
     {
-        var customersFromDatabase = _context.Customers.OrderBy(c => c.Id).ToList();
+        var customersFromDatabase = await _customerRepository.GetCustomersAsync();
         var customersToReturn = _mapper.Map<IEnumerable<CustomerDto>>(customersFromDatabase);
         return Ok(customersToReturn);
     }
 
-    [HttpGet("{id}", Name = "GetCustomerById")]
-    public ActionResult<CustomerDto> GetCustomerById(int id)
+    [HttpGet("{customerId}", Name = "GetCustomerById")]
+    public async Task<ActionResult<CustomerDto>> GetCustomerById(int customerId)
     {
-        var customerFromDatabase = _context
-            .Customers.FirstOrDefault(c => c.Id == id);
+        var customerFromDatabase = await _customerRepository.GetCustomerByIdAsync(customerId);
 
         if (customerFromDatabase == null) return NotFound();
 
@@ -209,8 +211,6 @@ public class CustomersController : MainController
             SelectMany retorna uma lista com todos endereços de todos usuários
             Max obtém a Id com o valor mais alto
         */
-        var maxAddressId = _context.Customers
-            .SelectMany(c => c.Addresses).Max(c => c.Id);
 
         /*
             Obtém uma lista de dados mapeados de AddressWithAddressesForCreationDto para Address
@@ -281,12 +281,9 @@ public class CustomersController : MainController
                                             _mapper.Map<Address>(address)
                                         ).ToList();
 
-
         _context.SaveChanges();
         // Retorna um StatusCode 204 No Content
         return NoContent();
     }
-
-
 
 }
