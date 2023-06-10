@@ -31,7 +31,6 @@ public class AddressesController : MainController
         var customerFromDatabase = _context.Customers
             .Include(c => c.Addresses)
             .FirstOrDefault(customer => customer.Id == customerId);
-
         if (customerFromDatabase == null) return NotFound();
 
         var addressesToReturn = new List<AddressDto>();
