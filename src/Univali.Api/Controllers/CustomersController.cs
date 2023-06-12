@@ -1,4 +1,5 @@
 using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -23,13 +24,15 @@ public class CustomersController : MainController
     private readonly IMapper _mapper;
     private readonly CustomerContext _context;
     private readonly ICustomerRepository _customerRepository;
+    private readonly IMediator _mediator;
 
-    public CustomersController(Data data, IMapper mapper, CustomerContext context, ICustomerRepository customerRepository)
+    public CustomersController(Data data, IMapper mapper, CustomerContext context, ICustomerRepository customerRepository, IMediator mediator)
     {
         _data = data ?? throw new ArgumentNullException(nameof(data));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository));
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
 
@@ -43,11 +46,10 @@ public class CustomersController : MainController
 
     [HttpGet("{customerId}", Name = "GetCustomerById")]
     public async Task<ActionResult<CustomerDto>> GetCustomerById(
-        [FromServices] IGetCustomerDetailQueryHandler handler,
         int customerId)
     {
         var getCustomerDetailQuery = new GetCustomerDetailQuery{Id = customerId};
-        var customerToReturn = await handler.Handle(getCustomerDetailQuery);
+        var customerToReturn = await  _mediator.Send(getCustomerDetailQuery);
 
         if(customerToReturn == null) return NotFound();
         return Ok(customerToReturn);
@@ -70,11 +72,10 @@ public class CustomersController : MainController
 
     [HttpPost]
     public async Task<ActionResult<CustomerDto>> CreateCustomer(
-        CreateCustomerCommand createCustomerCommand,
-        [FromServices] ICreateCustomerCommandHandler handler
+        CreateCustomerCommand createCustomerCommand
         )
     {
-        var customerToReturn = await handler.Handle(createCustomerCommand);
+        var customerToReturn = await _mediator.Send(createCustomerCommand);
 
         return CreatedAtRoute
         (

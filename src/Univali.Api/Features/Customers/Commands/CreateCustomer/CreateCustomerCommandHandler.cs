@@ -1,10 +1,11 @@
 using AutoMapper;
+using MediatR;
 using Univali.Api.Entities;
 using Univali.Api.Repositories;
 
 namespace Univali.Api.Features.Customers.Commands.CreateCustomer;
 
-public class CreateCustomerCommandHandler : ICreateCustomerCommandHandler
+public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerCommand, CreateCustomerDto>
 {
     private readonly ICustomerRepository _customerRepository;
     private readonly IMapper _mapper;
@@ -15,7 +16,7 @@ public class CreateCustomerCommandHandler : ICreateCustomerCommandHandler
         _mapper = mapper;
     }
 
-    public async Task<CreateCustomerDto> Handle(CreateCustomerCommand request)
+    public async Task<CreateCustomerDto> Handle(CreateCustomerCommand request, CancellationToken cancellationToken)
     {
         var customerEntity = _mapper.Map<Customer>(request);
         _customerRepository.AddCustomer(customerEntity);

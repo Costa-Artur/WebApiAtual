@@ -23,8 +23,7 @@ builder.Services.AddDbContext<CustomerContext>(options =>
     options.UseNpgsql("Host=localhost;Database=Univali;Username=postgres;Password=123456");
 }
 );
-builder.Services.AddTransient<IGetCustomerDetailQueryHandler, GetCustomerDetailQueryHandler>();
-builder.Services.AddTransient<ICreateCustomerCommandHandler, CreateCustomerCommandHandler>();
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
 builder.Services.AddControllers(options =>{
     options.InputFormatters.Insert(0, MyJPIF.GetJsonPatchInputFormatter());
 })

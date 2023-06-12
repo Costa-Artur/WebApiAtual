@@ -82,3 +82,5 @@ C:\Users\7828497\Desktop\WebApiAtual\src\Univali.Api\obj\Debug\net7.0\refint\Uni
 C:\Users\7828497\Desktop\WebApiAtual\src\Univali.Api\obj\Debug\net7.0\Univali.Api.pdb
 C:\Users\7828497\Desktop\WebApiAtual\src\Univali.Api\obj\Debug\net7.0\Univali.Api.genruntimeconfig.cache
 C:\Users\7828497\Desktop\WebApiAtual\src\Univali.Api\obj\Debug\net7.0\ref\Univali.Api.dll
+C:\Users\7828497\Desktop\WebApiAtual\src\Univali.Api\bin\Debug\net7.0\MediatR.dll
+C:\Users\7828497\Desktop\WebApiAtual\src\Univali.Api\bin\Debug\net7.0\MediatR.Contracts.dll

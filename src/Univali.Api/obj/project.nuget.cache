@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "KmzAtjkBCvARhlYe8tmjGmfrEXR+mr4dn9oSWRlm+FGHOuJxlw15h92R9on6VVPufSS4SFDYZ4LBULXFCY2PZA==",
+  "dgSpecHash": "OTIJWBlNOVaa78TZkJM9xQ4OSLYXtUYtqnn9uCc8kZVKgSp4Gar8TcTFOuH+CpNzEuNhTBZrSeaYIOvWWJHz3A==",
   "success": true,
   "projectFilePath": "C:\\Users\\7828497\\Desktop\\WebApiAtual\\src\\Univali.Api\\Univali.Api.csproj",
   "expectedPackageFiles": [
@@ -9,6 +9,8 @@
     "C:\\Users\\7828497\\.nuget\\packages\\azure.core\\1.24.0\\azure.core.1.24.0.nupkg.sha512",
     "C:\\Users\\7828497\\.nuget\\packages\\azure.identity\\1.6.0\\azure.identity.1.6.0.nupkg.sha512",
     "C:\\Users\\7828497\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
+    "C:\\Users\\7828497\\.nuget\\packages\\mediatr\\12.0.1\\mediatr.12.0.1.nupkg.sha512",
+    "C:\\Users\\7828497\\.nuget\\packages\\mediatr.contracts\\2.0.1\\mediatr.contracts.2.0.1.nupkg.sha512",
     "C:\\Users\\7828497\\.nuget\\packages\\microsoft.aspnetcore.jsonpatch\\7.0.4\\microsoft.aspnetcore.jsonpatch.7.0.4.nupkg.sha512",
     "C:\\Users\\7828497\\.nuget\\packages\\microsoft.aspnetcore.mvc.newtonsoftjson\\7.0.4\\microsoft.aspnetcore.mvc.newtonsoftjson.7.0.4.nupkg.sha512",
     "C:\\Users\\7828497\\.nuget\\packages\\microsoft.aspnetcore.openapi\\7.0.4\\microsoft.aspnetcore.openapi.7.0.4.nupkg.sha512",
