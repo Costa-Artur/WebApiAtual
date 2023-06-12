@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Univali.Api.DbContexts;
 using Univali.Api.Entities;
+using Univali.Api.Features.Customers.Commands.CreateCustomer;
+using Univali.Api.Features.Customers.Queries.GetCustomerDetail;
 using Univali.Api.Models;
 using Univali.Api.Repositories;
 
@@ -40,13 +42,14 @@ public class CustomersController : MainController
     }
 
     [HttpGet("{customerId}", Name = "GetCustomerById")]
-    public async Task<ActionResult<CustomerDto>> GetCustomerById(int customerId)
+    public async Task<ActionResult<CustomerDto>> GetCustomerById(
+        [FromServices] IGetCustomerDetailQueryHandler handler,
+        int customerId)
     {
-        var customerFromDatabase = await _customerRepository.GetCustomerByIdAsync(customerId);
+        var getCustomerDetailQuery = new GetCustomerDetailQuery{Id = customerId};
+        var customerToReturn = await handler.Handle(getCustomerDetailQuery);
 
-        if (customerFromDatabase == null) return NotFound();
-
-        var customerToReturn = _mapper.Map<CustomerDto>(customerFromDatabase);
+        if(customerToReturn == null) return NotFound();
         return Ok(customerToReturn);
     }
 
@@ -54,8 +57,7 @@ public class CustomersController : MainController
     [HttpGet("cpf/{cpf}")]
     public ActionResult<CustomerDto> GetCustomerByCpf(string cpf)
     {
-        var customerFromDatabase = _context.Customers
-            .FirstOrDefault(c => c.Cpf == cpf);
+        var customerFromDatabase = _customerRepository.GetCustomerByCpfAsync(cpf);
 
         if (customerFromDatabase == null)
         {
@@ -67,39 +69,17 @@ public class CustomersController : MainController
     }
 
     [HttpPost]
-    public ActionResult<CustomerDto> CreateCustomer(
-        CustomerForCreationDto customerForCreationDto)
+    public async Task<ActionResult<CustomerDto>> CreateCustomer(
+        CreateCustomerCommand createCustomerCommand,
+        [FromServices] ICreateCustomerCommandHandler handler
+        )
     {
-
-        /*if (!ModelState.IsValid)
-        {
-            Response.ContentType = "application/problem+json";
-            // Cria a fábrica de um objeto de detalhes de problema de validação
-            var problemDetailsFactory = HttpContext.RequestServices
-                .GetRequiredService<ProblemDetailsFactory>();
-
-            // Cria um objeto de detalhes de problema de validação
-            var validationProblemDetails = problemDetailsFactory
-                .CreateValidationProblemDetails(HttpContext, ModelState);
-
-            // Atribui o status code 422 no corpo do response
-            validationProblemDetails.Status = StatusCodes.Status422UnprocessableEntity;
-
-            return UnprocessableEntity(validationProblemDetails);
-        }*/
-
-        var customerEntity = _mapper.Map<Customer>(customerForCreationDto);
-
-        _context.Customers.Add(customerEntity);
-        _context.SaveChanges();
-
-        var customerToReturn = _mapper.Map<CustomerDto>(customerEntity);
-        customerToReturn.Id = customerEntity.Id;
+        var customerToReturn = await handler.Handle(createCustomerCommand);
 
         return CreatedAtRoute
         (
             "GetCustomerById",
-            new { id = customerToReturn.Id },
+            new { customerId = customerToReturn.Id },
             customerToReturn
         );
     }
