@@ -1,3 +1,5 @@
+
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +8,6 @@ using Univali.Api.Configuration;
 using Univali.Api.DbContexts;
 using Univali.Api.Extensions;
 using Univali.Api.Features.Customers.Commands.CreateCustomer;
-using Univali.Api.Features.Customers.Commands.UpdateCustomer;
 using Univali.Api.Features.Customers.Queries.GetCustomerDetail;
 using Univali.Api.Repositories;
 
@@ -19,12 +20,17 @@ builder.WebHost.ConfigureKestrel(options => {
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddSingleton<Data>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+
+
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
+
 builder.Services.AddDbContext<CustomerContext>(options => 
 {
-    options.UseNpgsql("Host=localhost;Database=Univali;Username=postgres;Password=Quintalmagico12#");
+    options
+    .UseNpgsql("Host=localhost;Database=Univali;Username=postgres;Password=123456");
 }
 );
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
+builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddControllers(options =>{
     options.InputFormatters.Insert(0, MyJPIF.GetJsonPatchInputFormatter());
 })

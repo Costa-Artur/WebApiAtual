@@ -47,11 +47,20 @@ public class CustomerRepository : ICustomerRepository
     public async Task<bool> SaveChangesAsync()
     {
         return (await _context.SaveChangesAsync() > 0);
-        
     }
 
     public void DeleteCustomer(Customer customer)
     {
         _context.Customers.Remove(customer);
+    }
+
+    public IEnumerable<Customer> GetCustomersWithAddresses()
+    {
+        return _context.Customers.OrderBy(c => c.Id).Include(c => c.Addresses).ToList();
+    }
+
+    public Customer? GetCustomerWithAddressesById (int customerId)
+    {
+        return _context.Customers.Include(c => c.Addresses).FirstOrDefault(c => c.Id == customerId);
     }
 }

@@ -5,7 +5,9 @@ using Univali.Api.Repositories;
 
 namespace Univali.Api.Features.Customers.Commands.CreateCustomer;
 
-public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerCommand, CreateCustomerDto>
+// O primeiro parâmetro é o tipo da mensagem
+// O segundo parâmetro é o tipo que se espera receber.
+public class CreateCustomerCommandHandler: IRequestHandler<CreateCustomerCommand, CreateCustomerDto>
 {
     private readonly ICustomerRepository _customerRepository;
     private readonly IMapper _mapper;
@@ -21,7 +23,7 @@ public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerComman
         var customerEntity = _mapper.Map<Customer>(request);
         _customerRepository.AddCustomer(customerEntity);
         await _customerRepository.SaveChangesAsync();
-        var customerToReturn =  _mapper.Map<CreateCustomerDto>(customerEntity);
+        var customerToReturn = _mapper.Map<CreateCustomerDto>(customerEntity);
         return customerToReturn;
     }
 }

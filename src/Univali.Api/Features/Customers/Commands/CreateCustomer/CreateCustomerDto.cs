@@ -1,4 +1,5 @@
 namespace Univali.Api.Features.Customers.Commands.CreateCustomer;
+
 public class CreateCustomerDto
 {
     public int Id { get; set; }

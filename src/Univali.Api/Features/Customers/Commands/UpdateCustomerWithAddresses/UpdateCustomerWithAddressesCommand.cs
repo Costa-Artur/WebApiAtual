@@ -3,9 +3,9 @@ using MediatR;
 using Univali.Api.Models;
 using Univali.Api.ValidationAttributes;
 
-namespace Univali.Api.Features.Customers.Commands.UpdateCustomer;
+namespace Univali.Api.Features.Customers.Commands.UpdateCustomerWithAddresses;
 
-public class UpdateCustomerCommand : IRequest<UpdateCustomerCommandDto>
+public class UpdateCustomerWithAddressesCommand : IRequest<UpdateCustomerWithAddressesCommandDto>
 {
     [Required(ErrorMessage = "You should fill out a Id")]
     public int Id {get; set;}
