@@ -1,4 +1,5 @@
 using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -7,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Univali.Api.DbContexts;
 using Univali.Api.Entities;
+using Univali.Api.Features.Customers.Commands.CreateCustomer;
+using Univali.Api.Features.Customers.Queries.GetCustomerDetail;
 using Univali.Api.Models;
 using Univali.Api.Repositories;
 
@@ -21,13 +24,15 @@ public class CustomersController : MainController
     private readonly IMapper _mapper;
     private readonly CustomerContext _context;
     private readonly ICustomerRepository _customerRepository;
+    private readonly IMediator _mediator;
 
-    public CustomersController(Data data, IMapper mapper, CustomerContext context, ICustomerRepository customerRepository)
+    public CustomersController(Data data, IMapper mapper, CustomerContext context, ICustomerRepository customerRepository, IMediator mediator)
     {
         _data = data ?? throw new ArgumentNullException(nameof(data));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _context = context ?? throw new ArgumentNullException(nameof(context));
         _customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository));
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
 
@@ -40,13 +45,13 @@ public class CustomersController : MainController
     }
 
     [HttpGet("{customerId}", Name = "GetCustomerById")]
-    public async Task<ActionResult<CustomerDto>> GetCustomerById(int customerId)
+    public async Task<ActionResult<CustomerDto>> GetCustomerById(
+        int customerId)
     {
-        var customerFromDatabase = await _customerRepository.GetCustomerByIdAsync(customerId);
+        var getCustomerDetailQuery = new GetCustomerDetailQuery{Id = customerId};
+        var customerToReturn = await  _mediator.Send(getCustomerDetailQuery);
 
-        if (customerFromDatabase == null) return NotFound();
-
-        var customerToReturn = _mapper.Map<CustomerDto>(customerFromDatabase);
+        if(customerToReturn == null) return NotFound();
         return Ok(customerToReturn);
     }
 
@@ -66,39 +71,16 @@ public class CustomersController : MainController
     }
 
     [HttpPost]
-    public ActionResult<CustomerDto> CreateCustomer(
-        CustomerForCreationDto customerForCreationDto)
+    public async Task<ActionResult<CustomerDto>> CreateCustomer(
+        CreateCustomerCommand createCustomerCommand
+        )
     {
-
-        /*if (!ModelState.IsValid)
-        {
-            Response.ContentType = "application/problem+json";
-            // Cria a fábrica de um objeto de detalhes de problema de validação
-            var problemDetailsFactory = HttpContext.RequestServices
-                .GetRequiredService<ProblemDetailsFactory>();
-
-            // Cria um objeto de detalhes de problema de validação
-            var validationProblemDetails = problemDetailsFactory
-                .CreateValidationProblemDetails(HttpContext, ModelState);
-
-            // Atribui o status code 422 no corpo do response
-            validationProblemDetails.Status = StatusCodes.Status422UnprocessableEntity;
-
-            return UnprocessableEntity(validationProblemDetails);
-        }*/
-
-        var customerEntity = _mapper.Map<Customer>(customerForCreationDto);
-
-        _context.Customers.Add(customerEntity);
-        _context.SaveChanges();
-
-        var customerToReturn = _mapper.Map<CustomerDto>(customerEntity);
-        customerToReturn.Id = customerEntity.Id;
+        var customerToReturn = await _mediator.Send(createCustomerCommand);
 
         return CreatedAtRoute
         (
             "GetCustomerById",
-            new { id = customerToReturn.Id },
+            new { customerId = customerToReturn.Id },
             customerToReturn
         );
     }
