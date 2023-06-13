@@ -9,6 +9,8 @@ using Microsoft.Extensions.Options;
 using Univali.Api.DbContexts;
 using Univali.Api.Entities;
 using Univali.Api.Features.Customers.Commands.CreateCustomer;
+using Univali.Api.Features.Customers.Commands.UpdateCustomer;
+using Univali.Api.Features.Customers.Queries.DeleteCustomer;
 using Univali.Api.Features.Customers.Queries.GetCustomerDetail;
 using Univali.Api.Models;
 using Univali.Api.Repositories;
@@ -55,7 +57,6 @@ public class CustomersController : MainController
         return Ok(customerToReturn);
     }
 
-
     [HttpGet("cpf/{cpf}")]
     public ActionResult<CustomerDto> GetCustomerByCpf(string cpf)
     {
@@ -86,42 +87,42 @@ public class CustomersController : MainController
     }
 
     [HttpPut("{id}")]
-    public ActionResult UpdateCustomer(int id,
-        CustomerForUpdateDto customerForUpdateDto)
+    public async Task<ActionResult> UpdateCustomer(int id,
+        UpdateCustomerCommand customerForUpdateDto
+        )
     {
         if (id != customerForUpdateDto.Id) return BadRequest();
 
-        var customerFromDatabase = _context.Customers
-            .FirstOrDefault(customer => customer.Id == id);
+        var customerFromDatabase = await _customerRepository.GetCustomerByIdAsync(id);
 
         if (customerFromDatabase == null) return NotFound();
 
-        _mapper.Map(customerForUpdateDto, customerFromDatabase);
-        _context.SaveChanges();
+        await  _mediator.Send(customerForUpdateDto);
 
         return NoContent();
     }
 
     [HttpDelete("{id}")]
-    public ActionResult DeleteCustomer(int id)
+    public async Task<ActionResult> DeleteCustomer(int id)
     {
-        var customerFromDatabase = _context.Customers
-            .FirstOrDefault(customer => customer.Id == id);
+        var customerFromDatabase = await _customerRepository.GetCustomerByIdAsync(id);
 
         if (customerFromDatabase == null) return NotFound();
 
-        _context.Customers.Remove(customerFromDatabase);
-        _context.SaveChanges();
+        var DeleteCustomer = new DeleteCustomerQuery {Id = id};
+
+        await _mediator.Send(DeleteCustomer);
+        await _customerRepository.SaveChangesAsync();
 
         return NoContent();
     }
+
     [HttpPatch("{id}")]
-    public ActionResult PartiallyUpdateCustomer(
+    public async Task<ActionResult> PartiallyUpdateCustomer(
         [FromBody] JsonPatchDocument<CustomerForPatchDto> patchDocument,
         [FromRoute] int id)
     {
-        var customerFromDatabase = _context.Customers
-            .FirstOrDefault(customer => customer.Id == id);
+        var customerFromDatabase = await _customerRepository.GetCustomerByIdAsync(id);
 
         if (customerFromDatabase == null) return NotFound();
 
@@ -136,7 +137,7 @@ public class CustomersController : MainController
 
         _mapper.Map(customerToPatch, customerFromDatabase);
 
-        _context.SaveChanges();
+        await _customerRepository.SaveChangesAsync();
 
         return NoContent();
 

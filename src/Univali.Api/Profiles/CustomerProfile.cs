@@ -1,6 +1,7 @@
 using AutoMapper;
 using Univali.Api.Entities;
 using Univali.Api.Features.Customers.Commands.CreateCustomer;
+using Univali.Api.Features.Customers.Commands.UpdateCustomer;
 using Univali.Api.Features.Customers.Queries.GetCustomerDetail;
 using Univali.Api.Models;
 
@@ -32,5 +33,7 @@ public class CustomerProfile : Profile
         CreateMap<CreateCustomerCommand, Customer>();
         CreateMap<Customer, CreateCustomerDto>();
         CreateMap<CustomerForCreationDto, CreateCustomerCommand>();
+        CreateMap<UpdateCustomerCommand, Customer>();
+        CreateMap<Customer, UpdateCustomerCommandDto>();
     }
 }

@@ -6,6 +6,7 @@ using Univali.Api.Configuration;
 using Univali.Api.DbContexts;
 using Univali.Api.Extensions;
 using Univali.Api.Features.Customers.Commands.CreateCustomer;
+using Univali.Api.Features.Customers.Commands.UpdateCustomer;
 using Univali.Api.Features.Customers.Queries.GetCustomerDetail;
 using Univali.Api.Repositories;
 
@@ -20,7 +21,7 @@ builder.Services.AddSingleton<Data>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddDbContext<CustomerContext>(options => 
 {
-    options.UseNpgsql("Host=localhost;Database=Univali;Username=postgres;Password=123456");
+    options.UseNpgsql("Host=localhost;Database=Univali;Username=postgres;Password=Quintalmagico12#");
 }
 );
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());

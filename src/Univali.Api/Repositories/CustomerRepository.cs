@@ -18,8 +18,6 @@ public class CustomerRepository : ICustomerRepository
         _mapper = mapper;
     }
 
-    
-
     public async Task AddCustomerAsync(Customer customer)
     {
         await _context.Customers.AddAsync(customer);
@@ -36,12 +34,6 @@ public class CustomerRepository : ICustomerRepository
         return await _context.Customers.FirstOrDefaultAsync(c => c.Id == customerId);
     }
 
-    public async Task<Customer?> GetCustomerByCpfAsync(string customerCpf)
-    {
-        return await _context.Customers.FirstOrDefaultAsync(c => c.Cpf == customerCpf);
-    }
-
-
     public async Task<IEnumerable<Customer>> GetCustomersAsync()
     {
         return await _context.Customers.OrderBy(c => c.Id).ToListAsync();
@@ -56,5 +48,10 @@ public class CustomerRepository : ICustomerRepository
     {
         return (await _context.SaveChangesAsync() > 0);
         
+    }
+
+    public void DeleteCustomer(Customer customer)
+    {
+        _context.Customers.Remove(customer);
     }
 }
