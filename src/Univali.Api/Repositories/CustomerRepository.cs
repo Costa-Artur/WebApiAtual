@@ -19,6 +19,12 @@ public class CustomerRepository : ICustomerRepository
         return await _context.Customers.FirstOrDefaultAsync(c => c.Id == customerId);
     }
 
+    public async Task<Customer?> GetCustomerByCpfAsync(string customerCpf)
+    {
+        return await _context.Customers.FirstOrDefaultAsync(c => c.Cpf == customerCpf);
+    }
+
+
     public async Task<IEnumerable<Customer>> GetCustomersAsync()
     {
         return await _context.Customers.OrderBy(c => c.Id).ToListAsync();

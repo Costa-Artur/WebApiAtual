@@ -54,8 +54,7 @@ public class CustomersController : MainController
     [HttpGet("cpf/{cpf}")]
     public ActionResult<CustomerDto> GetCustomerByCpf(string cpf)
     {
-        var customerFromDatabase = _context.Customers
-            .FirstOrDefault(c => c.Cpf == cpf);
+        var customerFromDatabase = _customerRepository.GetCustomerByCpfAsync(cpf);
 
         if (customerFromDatabase == null)
         {

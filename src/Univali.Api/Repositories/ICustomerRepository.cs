@@ -7,4 +7,5 @@ public interface ICustomerRepository
     Task<IEnumerable<Customer>> GetCustomersAsync();
 
     Task<Customer?> GetCustomerByIdAsync(int customerId);
+    Task<Customer?> GetCustomerByCpfAsync(string customerCpf);
 }
