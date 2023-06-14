@@ -19,31 +19,23 @@ public class UpdateCustomerWithAddressesCommandHandler : IRequestHandler<UpdateC
 
     public async Task<UpdateCustomerWithAddressesCommandDto> Handle(UpdateCustomerWithAddressesCommand request, CancellationToken cancellationToken)
     {
-            var customerFromDatabase = await _customerRepository.GetCustomerByIdAsync(request.Id);
+        var customerFromDatabase = await _customerRepository.GetCustomerByIdAsync(request.Id);
 
-            if(customerFromDatabase != null)
-            {
-                _mapper.Map(request, customerFromDatabase);
+        if(customerFromDatabase == null)
+        {
+            return new UpdateCustomerWithAddressesCommandDto {sucess = false};
+        }
 
-                customerFromDatabase.Addresses = request
-                                                .Addresses.Select(
-                                                    address =>
-                                                    _mapper.Map<Address>(address)
-                                                ).ToList();
-            }
-            await _customerRepository.SaveChangesAsync();
-            var customerToReturn = _mapper.Map<UpdateCustomerWithAddressesCommandDto>(customerFromDatabase);
-            
-            if(customerFromDatabase != null)
-            {
-                List<AddressDto> addressesDto = customerFromDatabase.Addresses
-                    .Select(address =>
-                        _mapper.Map<AddressDto>(address)
-                        ).ToList();
-                customerToReturn.Addresses = addressesDto;
-            }
-        
-        
-        return customerToReturn;
+        _mapper.Map(request, customerFromDatabase);
+
+        customerFromDatabase.Addresses = request
+                                            .Addresses.Select(
+                                                address =>
+                                                _mapper.Map<Address>(address)
+                                            ).ToList();
+
+        await _customerRepository.SaveChangesAsync();
+
+        return new UpdateCustomerWithAddressesCommandDto {sucess = true};
     }
 }

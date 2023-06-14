@@ -10,6 +10,6 @@ public interface ICustomerRepository
     void AddCustomer(Customer customer);
     Task<bool> SaveChangesAsync();
     void DeleteCustomer(Customer customer);
-    IEnumerable<Customer> GetCustomersWithAddresses();
-    Customer? GetCustomerWithAddressesById (int customerId);
+    Task<IEnumerable<Customer>> GetCustomersWithAddressesAsync();
+    Task<Customer?> GetCustomerWithAddressesByIdAsync (int customerId);
 }

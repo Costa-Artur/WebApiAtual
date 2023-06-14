@@ -54,13 +54,14 @@ public class CustomerRepository : ICustomerRepository
         _context.Customers.Remove(customer);
     }
 
-    public IEnumerable<Customer> GetCustomersWithAddresses()
+    public async Task<IEnumerable<Customer>> GetCustomersWithAddressesAsync ()
     {
-        return _context.Customers.OrderBy(c => c.Id).Include(c => c.Addresses).ToList();
+        return await _context.Customers.OrderBy(c => c.Id).Include(c => c.Addresses).ToListAsync();
     }
 
-    public Customer? GetCustomerWithAddressesById (int customerId)
+    public async Task<Customer?> GetCustomerWithAddressesByIdAsync (int customerId)
     {
-        return _context.Customers.Include(c => c.Addresses).FirstOrDefault(c => c.Id == customerId);
+        return await _context.Customers.Include(c => c.Addresses).FirstOrDefaultAsync(c => c.Id == customerId);
     }
+
 }

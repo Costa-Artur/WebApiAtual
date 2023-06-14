@@ -19,9 +19,15 @@ public class UpdateCustomerCommandHandler : IRequestHandler<UpdateCustomerComman
     public async Task<UpdateCustomerCommandDto> Handle(UpdateCustomerCommand request, CancellationToken cancellationToken)
     {
         var customerFromDatabase = await _customerRepository.GetCustomerByIdAsync(request.Id);
+        if(customerFromDatabase == null)
+        {
+            return new UpdateCustomerCommandDto {sucess = false};
+        }
         _mapper.Map(request, customerFromDatabase);
+
         await _customerRepository.SaveChangesAsync();
-        var customerToReturn = _mapper.Map<UpdateCustomerCommandDto>(customerFromDatabase);
-        return customerToReturn;
+
+        return new UpdateCustomerCommandDto {sucess = true};
     }
+
 }
