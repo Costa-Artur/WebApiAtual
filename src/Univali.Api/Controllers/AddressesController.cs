@@ -68,6 +68,10 @@ public class AddressesController : MainController
         return Ok(addressToReturn);
     }
 
+    ///<summary>Creates Address for customer</summary>
+    ///<param name="customerId"> Id do customer </param>
+    ///<param name="addressForCreationDto"> Dto do endereco </param>
+    ///
     [HttpPost]
     public ActionResult<AddressDto> CreateAddress(
        int customerId,

@@ -1,5 +1,6 @@
 using AutoMapper;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -10,9 +11,9 @@ using Univali.Api.DbContexts;
 using Univali.Api.Entities;
 using Univali.Api.Features.Customers.Commands.CreateCustomer;
 using Univali.Api.Features.Customers.Commands.CreateCustomerWithAddresses;
+using Univali.Api.Features.Customers.Commands.DeleteCustomer;
 using Univali.Api.Features.Customers.Commands.UpdateCustomer;
 using Univali.Api.Features.Customers.Commands.UpdateCustomerWithAddresses;
-using Univali.Api.Features.Customers.Queries.DeleteCustomer;
 using Univali.Api.Features.Customers.Queries.GetCustomerDetail;
 using Univali.Api.Models;
 using Univali.Api.Repositories;
@@ -21,6 +22,7 @@ namespace Univali.Api.Controllers;
 
 
 [Route("api/customers")]
+[Authorize]
 public class CustomersController : MainController
 {
 
@@ -94,12 +96,10 @@ public class CustomersController : MainController
         )
     {
         if (id != customerForUpdateDto.Id) return BadRequest();
+        
+        var customerUpdate = await  _mediator.Send(customerForUpdateDto);
 
-        var customerFromDatabase = await _customerRepository.GetCustomerByIdAsync(id);
-
-        if (customerFromDatabase == null) return NotFound();
-
-        await  _mediator.Send(customerForUpdateDto);
+        if(customerUpdate.sucess == false) return NotFound();
 
         return NoContent();
     }
@@ -107,15 +107,9 @@ public class CustomersController : MainController
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteCustomer(int id)
     {
-        var customerFromDatabase = await _customerRepository.GetCustomerByIdAsync(id);
-
-        if (customerFromDatabase == null) return NotFound();
-
-        var DeleteCustomer = new DeleteCustomerQuery {Id = id};
-
-        await _mediator.Send(DeleteCustomer);
-        await _customerRepository.SaveChangesAsync();
-
+        var DeleteCustomer = new DeleteCustomerCommand {Id = id};
+        var customerDelete = await _mediator.Send(DeleteCustomer);
+        if(customerDelete.sucess == false) return NotFound();
         return NoContent();
     }
 
@@ -146,37 +140,19 @@ public class CustomersController : MainController
     }
 
     [HttpGet("with-addresses")]
-    public ActionResult<IEnumerable<CustomerWithAddressesDto>> GetCustomersWithAddresses()
+    public async Task<ActionResult<IEnumerable<CustomerWithAddressesDto>>> GetCustomersWithAddresses()
     {
-        var customersFromDatabase = _customerRepository.GetCustomersWithAddresses();
-
-        var customersToReturn = _mapper.Map<IEnumerable<CustomerWithAddressesDto>>(customersFromDatabase);
-
+        var customersFromDatabase = await _customerRepository.GetCustomersWithAddressesAsync();
+        var customersToReturn =  _mapper.Map<IEnumerable<CustomerWithAddressesDto>>(customersFromDatabase);
         return Ok(customersToReturn);
     }
 
     [HttpGet("with-addresses/{customerId}", Name = "GetCustomerWithAddressesById")]
-    public ActionResult<CustomerWithAddressesDto> GetCustomerWithAddressesById(int customerId)
+    public  async Task<ActionResult<CustomerWithAddressesDto>> GetCustomerWithAddressesById(int customerId)
     {
-        // Obtém o primeiro recurso que encontrar com a id correspondente ou retorna null
-        var customerFromDatabase = _customerRepository.GetCustomerWithAddressesById(customerId);
-
-        // Verifica se customer foi encontrado
+        var customerFromDatabase = await _customerRepository.GetCustomerWithAddressesByIdAsync(customerId);
         if (customerFromDatabase == null) return NotFound();
-
-        /*
-            Obtém uma lista de dados mapeados de Address para AddressDto
-            Select projeta cada item da lista para um novo formato
-            ToList transforma os dados em lista
-        */
-        var addressesDto = customerFromDatabase
-            .Addresses.Select(address =>
-            _mapper.Map<AddressDto>(address)
-        ).ToList();
-
-        // Mapeia Customer para CustomerDto
         var customerToReturn = _mapper.Map<CustomerWithAddressesDto>(customerFromDatabase);
-        // Retorna StatusCode 200 com o Customer no corpo do response
         return Ok(customerToReturn);
     }
 
@@ -187,33 +163,22 @@ public class CustomersController : MainController
       
         var customerToReturn = await _mediator.Send(customerWithAddressesForCreationDto);
 
-        // Retorna uma resposta com o cabeçalho de localização do novo recurso
         return CreatedAtRoute
         (
-            // Nome do método
             "GetCustomerWithAddressesById",
-            // Objeto anônimo que possui os parâmetros do método
             new { customerId = customerToReturn.Id },
-            // O novo registro criado
             customerToReturn
         );
     }
 
     [HttpPut("with-addresses/{customerId}")]
-    public ActionResult UpdateCustomerWithAddresses(int customerId,
+    public async Task<ActionResult> UpdateCustomerWithAddresses(int customerId,
        UpdateCustomerWithAddressesCommand customerWithAddressesForUpdateDto)
     {
         if (customerId != customerWithAddressesForUpdateDto.Id) return BadRequest();
 
-        // Obtém o primeiro recurso que encontrar com a id correspondente ou retorna null
-        var customerFromDatabase = _context.Customers
-            .FirstOrDefault(c => c.Id == customerId);
-        // Verifica se customer foi encontrado
-        if (customerFromDatabase == null) return NotFound();
-
-        // Atualiza a instância customer no Database
-        _mediator.Send(customerWithAddressesForUpdateDto);
-        // Retorna um StatusCode 204 No Content
+        var updateCustomer = await _mediator.Send(customerWithAddressesForUpdateDto);
+        if(updateCustomer.sucess == false) return NotFound();
         return NoContent();
     }
 
