@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\7828497\\Desktop\\WebApiAtual-1\\src\\univali.api\\Univali.Api.csproj": {}
+    "c:\\Users\\7828497\\Desktop\\WebApiAtual\\src\\Univali.Api\\Univali.Api.csproj": {}
   },
   "projects": {
-    "C:\\Users\\7828497\\Desktop\\WebApiAtual-1\\src\\univali.api\\Univali.Api.csproj": {
+    "c:\\Users\\7828497\\Desktop\\WebApiAtual\\src\\Univali.Api\\Univali.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\7828497\\Desktop\\WebApiAtual-1\\src\\univali.api\\Univali.Api.csproj",
+        "projectUniqueName": "c:\\Users\\7828497\\Desktop\\WebApiAtual\\src\\Univali.Api\\Univali.Api.csproj",
         "projectName": "Univali.Api",
-        "projectPath": "C:\\Users\\7828497\\Desktop\\WebApiAtual-1\\src\\univali.api\\Univali.Api.csproj",
+        "projectPath": "c:\\Users\\7828497\\Desktop\\WebApiAtual\\src\\Univali.Api\\Univali.Api.csproj",
         "packagesPath": "C:\\Users\\7828497\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\7828497\\Desktop\\WebApiAtual-1\\src\\univali.api\\obj\\",
+        "outputPath": "c:\\Users\\7828497\\Desktop\\WebApiAtual\\src\\Univali.Api\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
