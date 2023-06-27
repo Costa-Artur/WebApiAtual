@@ -26,17 +26,13 @@ namespace Univali.Api.Controllers;
 public class CustomersController : MainController
 {
 
-    private readonly Data _data;
     private readonly IMapper _mapper;
-    private readonly CustomerContext _context;
     private readonly ICustomerRepository _customerRepository;
     private readonly IMediator _mediator;
 
-    public CustomersController(Data data, IMapper mapper, CustomerContext context, ICustomerRepository customerRepository, IMediator mediator)
+    public CustomersController(IMapper mapper, ICustomerRepository customerRepository, IMediator mediator)
     {
-        _data = data ?? throw new ArgumentNullException(nameof(data));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
-        _context = context ?? throw new ArgumentNullException(nameof(context));
         _customerRepository = customerRepository ?? throw new ArgumentNullException(nameof(customerRepository));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
