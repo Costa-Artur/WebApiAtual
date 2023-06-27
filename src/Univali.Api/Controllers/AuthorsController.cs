@@ -4,10 +4,12 @@ using Univali.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Univali.Api.Features.Authors.Commands.CreateAuthor;
 using Univali.Api.Features.Authors.Commands.UpdateAuthor;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Univali.Api.Controllers;
 
 [Route("api/authors")]
+[Authorize]
 public class AuthorsController : MainController
 {
     private readonly IMapper _mapper;
