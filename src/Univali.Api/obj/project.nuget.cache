@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "DUGrxManb0uQlOp19Bix8uZ4sHWib/5SrrzcGsIVa693ZyD/57FUrGU5GlSY3+G67Hs03cuC3rYHNaNElTbpMQ==",
+  "dgSpecHash": "GW++3c4d9UdmsV93l89cU4yp7MJtdirkyD4SRLXoBSKB6doC9FlsbKw2gTwbggTakRAbW7ubCZc4gyrY8QXO9A==",
   "success": true,
-  "projectFilePath": "c:\\Users\\artur\\Documents\\PROGRAMAÇÃO\\C#\\WebApiAtual\\src\\Univali.Api\\Univali.Api.csproj",
+  "projectFilePath": "C:\\Users\\artur\\Documents\\PROGRAMAÇÃO\\C#\\WebApiAtual\\src\\univali.api\\Univali.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\artur\\.nuget\\packages\\automapper\\12.0.1\\automapper.12.0.1.nupkg.sha512",
     "C:\\Users\\artur\\.nuget\\packages\\automapper.extensions.microsoft.dependencyinjection\\12.0.1\\automapper.extensions.microsoft.dependencyinjection.12.0.1.nupkg.sha512",

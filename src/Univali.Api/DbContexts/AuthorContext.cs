@@ -12,6 +12,28 @@ public class AuthorContext : DbContext
 
     protected override void OnModelCreating (ModelBuilder modelBuilder)
     {
+
+        var author = modelBuilder.Entity<Author>();
+
+        author
+            .HasMany(a => a.Courses)
+            .WithMany(c => c.Authors)
+            .UsingEntity<AuthorCourse>(
+                "AuthorsCourses",
+                ac => ac.Property(ac => ac.CreatedOn).HasDefaultValueSql("NOW()")
+            );
+
+        author
+            .Property(a => a.FirstName)
+            .HasMaxLength(30)
+            .IsRequired();
+            
+        author
+            .Property(a => a.LastName)
+            .HasMaxLength(30)
+            .IsRequired();
+        
+
         modelBuilder.Entity<Author>()
             .HasData
             (
