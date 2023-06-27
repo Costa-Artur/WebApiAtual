@@ -41,7 +41,6 @@ public class CustomersController : MainController
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
-
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomers()
     {

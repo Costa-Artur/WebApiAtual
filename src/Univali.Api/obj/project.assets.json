@@ -4315,11 +4315,19 @@
   "project": {
     "version": "1.0.0",
     "restore": {
+<<<<<<< HEAD
       "projectUniqueName": "c:\\Users\\artur\\Documents\\PROGRAMAÇÃO\\C#\\WebApiAtual\\src\\Univali.Api\\Univali.Api.csproj",
       "projectName": "Univali.Api",
       "projectPath": "c:\\Users\\artur\\Documents\\PROGRAMAÇÃO\\C#\\WebApiAtual\\src\\Univali.Api\\Univali.Api.csproj",
       "packagesPath": "C:\\Users\\artur\\.nuget\\packages\\",
       "outputPath": "c:\\Users\\artur\\Documents\\PROGRAMAÇÃO\\C#\\WebApiAtual\\src\\Univali.Api\\obj\\",
+=======
+      "projectUniqueName": "c:\\Users\\7828497\\Desktop\\WebApiAtual\\src\\Univali.Api\\Univali.Api.csproj",
+      "projectName": "Univali.Api",
+      "projectPath": "c:\\Users\\7828497\\Desktop\\WebApiAtual\\src\\Univali.Api\\Univali.Api.csproj",
+      "packagesPath": "C:\\Users\\7828497\\.nuget\\packages\\",
+      "outputPath": "c:\\Users\\7828497\\Desktop\\WebApiAtual\\src\\Univali.Api\\obj\\",
+>>>>>>> d22485259ffee2171f1d331730a4089376510840
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\artur\\AppData\\Roaming\\NuGet\\NuGet.Config",
