@@ -11,11 +11,16 @@ internal static class StartupHelperExtensions
        {
            try
            {
-               var context = scope.ServiceProvider.GetService<AuthorContext>();
+               var context = scope.ServiceProvider.GetService<CustomerContext>();
                if (context != null)
                {
                    await context.Database.EnsureDeletedAsync();
                    await context.Database.MigrateAsync();
+               }
+               var authorContext = scope.ServiceProvider.GetService<AuthorContext>();
+               if(authorContext != null)
+               {
+                await authorContext.Database.MigrateAsync();
                }
            }
            catch (Exception ex)
